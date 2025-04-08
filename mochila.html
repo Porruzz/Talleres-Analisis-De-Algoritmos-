@@ -3,20 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Problema de la Mochila</title>
+    <title>Problema de la Mochila Interactivo</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Problema de la Mochila (0/1 Knapsack)</h1>
-        <p>Calcula la mejor combinación de objetos para maximizar el valor total sin exceder 10 kg.</p>
-        
+
+        <label for="capacidad">Capacidad Mochila (kg):</label>
+        <input type="number" id="capacidad" value="10" step="0.1" class="input-field">
+
+        <h3>Agregar objeto</h3>
+        <input type="text" id="nombreObjeto" placeholder="Nombre" class="input-field">
+        <input type="number" id="valorObjeto" placeholder="Valor ($)" class="input-field">
+        <input type="number" id="pesoObjeto" placeholder="Peso (kg)" step="0.1" class="input-field">
+        <button onclick="agregarObjeto()" class="btn">Agregar Objeto</button>
+
+        <ul id="listaObjetos" style="color:white; text-align:left;"></ul>
+
         <button onclick="resolverKnapsack()" class="btn">Calcular Mejor Combinación</button>
 
         <div id="resultado" style="color:white; margin-top:15px;"></div>
-        
+
         <a href="index.html" class="btn" style="background-color:#555;">🔙 Volver al inicio</a>
     </div>
-    <script src="mochila.js"></script>
+
+    <script>
+        const objetos = [];
+
+        function agregarObjeto() {
+            const nombre = document.getElementById('nombreObjeto').value;
+            const valor = parseFloat(document.getElementById('valorObjeto').value);
+            const peso = parseFloat(document.getElementById('pesoObjeto').value);
+
+            if (!nombre || isNaN(valor) || isNaN(peso)) {
+                alert('Por favor ingresa correctamente todos los datos del objeto.');
+                return;
+            }
+
+            objetos.push({ nombre, valor, peso });
+
+            actualizarListaObjetos();
+
+            document.getElementById('nombreObjeto').value = '';
+            document.getElementById('valorObjeto').value = '';
+            document.getElementById('pesoObjeto').value = '';
+        }
+
+        function actualizarListaObjetos() {
+            const lista = document.getElementById('listaObjetos');
+            lista.innerHTML = '';
+
+            objetos.forEach((obj, index) => {
+                lista.innerHTML += `<li>${index + 1}. ${obj.nombre} - Valor: $${obj.valor}, Peso: ${obj.peso}kg</li>`;
+            });
+        }
+
+        function resolverKnapsack() {
+            const capacidad = parseFloat(document.getElementById('capacidad').value);
+            let mejorValor = 0;
+            let mejorCombinacion = [];
+
+            const combinaciones = generarCombinaciones(objetos);
+
+            combinaciones.forEach(comb => {
+                const pesoTotal = comb.reduce((suma, obj) => suma + obj.peso, 0);
+                const valorTotal = comb.reduce((suma, obj) => suma + obj.valor, 0);
+
+                if (pesoTotal <= capacidad && valorTotal > mejorValor) {
+                    mejorValor = valorTotal;
+                    mejorCombinacion = comb;
+                }
+            });
+
+            mostrarResultado(mejorCombinacion, mejorValor);
+        }
+
+        function generarCombinaciones(array) {
+            const resultados = [];
+            const n = array.length;
+
+            for (let i = 0; i < (1 << n); i++) {
+                let combinacion = [];
+                for (let j = 0; j < n; j++) {
+                    if (i & (1 << j)) combinacion.push(array[j]);
+                }
+                resultados.push(combinacion);
+            }
+            return resultados;
+        }
+
+        function mostrarResultado(combinacion, valor) {
+            const resultadoDiv = document.getElementById('resultado');
+            if (combinacion.length === 0) {
+                resultadoDiv.innerHTML = 'Ninguna combinación es válida.';
+                return;
+            }
+
+            let contenido = `<strong>✅ Mejor combinación:</strong><br>`;
+
+            combinacion.forEach(obj => {
+                contenido += `• ${obj.nombre} (Valor: $${obj.valor}, Peso: ${obj.peso} kg)<br>`;
+            });
+
+            const pesoTotal = combinacion.reduce((suma, obj) => suma + obj.peso, 0);
+
+            contenido += `<br><strong>Peso Total:</strong> ${pesoTotal} kg<br>`;
+            contenido += `<strong>Valor Total:</strong> $${valor}`;
+
+            resultadoDiv.innerHTML = contenido;
+        }
+    </script>
 </body>
 </html>
