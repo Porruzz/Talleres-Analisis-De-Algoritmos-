@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AG - Selección de Características</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .btn-run {
+            background-color: #28a745;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧬 Algoritmo Genético - Selección de Características</h1>
+        <p>Este ejemplo simula la selección de características para un modelo de ML con AG.</p>
+        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+        <div class="result-box" id="output"></div>
+    </div>
+
+    <script>
+        const numFeatures = 6;
+        const populationSize = 10;
+        const generations = 10;
+
+        // Simulación: cuanto más 1s tenga, mejor, pero penalizamos más de 4 features
+        function fitness(individual) {
+            const count = individual.reduce((a, b) => a + b, 0);
+            return count <= 4 ? count : 4 - (count - 4); // penalización si usa más de 4
+        }
+
+        function createIndividual() {
+            return Array.from({ length: numFeatures }, () => Math.round(Math.random()));
+        }
+
+        function createPopulation() {
+            return Array.from({ length: populationSize }, createIndividual);
+        }
+
+        function selection(pop) {
+            return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, populationSize / 2);
+        }
+
+        function crossover(p1, p2) {
+            const point = Math.floor(Math.random() * numFeatures);
+            const child1 = [...p1.slice(0, point), ...p2.slice(point)];
+            const child2 = [...p2.slice(0, point), ...p1.slice(point)];
+            return [child1, child2];
+        }
+
+        function mutate(ind) {
+            const i = Math.floor(Math.random() * numFeatures);
+            ind[i] = ind[i] === 1 ? 0 : 1;
+            return ind;
+        }
+
+        function runGA() {
+            let population = createPopulation();
+            let output = document.getElementById("output");
+            output.innerHTML = "";
+
+            for (let gen = 1; gen <= generations; gen++) {
+                const selected = selection(population);
+                let nextGen = [];
+
+                for (let i = 0; i < selected.length; i += 2) {
+                    const [c1, c2] = crossover(selected[i], selected[i + 1] || selected[0]);
+                    nextGen.push(mutate(c1));
+                    nextGen.push(mutate(c2));
+                }
+
+                population = nextGen;
+                const best = selection(population)[0];
+                output.innerHTML += `
+                    <strong>Generación ${gen}</strong><br>
+                    Mejor individuo: [${best.join(", ")}] | Aptitud: ${fitness(best)}<br><br>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
