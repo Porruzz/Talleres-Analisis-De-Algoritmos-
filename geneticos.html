@@ -20,12 +20,37 @@
             background-color: #28a745;
             margin-top: 20px;
         }
+        .highlight {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        ul.features {
+            padding: 0;
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        ul.features li {
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            border-radius: 5px;
+            line-height: 25px;
+            background-color: #aaa;
+        }
+        ul.features li.active {
+            background-color: #28a745;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🧬 Algoritmo Genético - Selección de Características</h1>
-        <p>Este ejemplo simula la selección de características para un modelo de ML con AG.</p>
+        <p>Este ejemplo simula cómo un algoritmo genético selecciona automáticamente las características más relevantes para un modelo de aprendizaje automático.</p>
+        <p>💡 Cada <span class="highlight">1</span> representa una característica seleccionada. El objetivo es tener buenas combinaciones sin usar más de 4 características.</p>
         <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
         <div class="result-box" id="output"></div>
     </div>
@@ -35,10 +60,9 @@
         const populationSize = 10;
         const generations = 10;
 
-        // Simulación: cuanto más 1s tenga, mejor, pero penalizamos más de 4 features
         function fitness(individual) {
             const count = individual.reduce((a, b) => a + b, 0);
-            return count <= 4 ? count : 4 - (count - 4); // penalización si usa más de 4
+            return count <= 4 ? count : 4 - (count - 4); 
         }
 
         function createIndividual() {
@@ -66,6 +90,10 @@
             return ind;
         }
 
+        function renderIndividual(ind) {
+            return `<ul class="features">${ind.map(val => `<li class="${val === 1 ? 'active' : ''}">${val}</li>`).join('')}</ul>`;
+        }
+
         function runGA() {
             let population = createPopulation();
             let output = document.getElementById("output");
@@ -85,7 +113,8 @@
                 const best = selection(population)[0];
                 output.innerHTML += `
                     <strong>Generación ${gen}</strong><br>
-                    Mejor individuo: [${best.join(", ")}] | Aptitud: ${fitness(best)}<br><br>
+                    ${renderIndividual(best)}
+                    Aptitud: <span class="highlight">${fitness(best)}</span><br><br>
                 `;
             }
         }
