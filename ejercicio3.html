@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 3 - TSP con AG</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .map {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .city {
+      background-color: #ff6f61;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 50%;
+      font-weight: bold;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .btn-run {
+      background-color: #28a745;
+      margin-top: 20px;
+    }
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: white;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚗 Ejercicio 3: Problema del Vendedor Viajero</h1>
+    <p>Este ejercicio usa un algoritmo genético para encontrar la mejor ruta entre 5 ciudades minimizando la distancia recorrida.</p>
+
+    <div class="map">
+      <div class="city">A</div>
+      <div class="city">B</div>
+      <div class="city">C</div>
+      <div class="city">D</div>
+      <div class="city">E</div>
+    </div>
+
+    <div class="input-group">
+      <label for="population">Tamaño de la población:</label>
+      <input type="number" id="population" value="10" min="2" />
+
+      <label for="generations">Número de generaciones:</label>
+      <input type="number" id="generations" value="20" min="1" />
+    </div>
+
+    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    const cities = [
+      [0, 0],
+      [1, 2],
+      [3, 1],
+      [5, 3],
+      [6, 5]
+    ];
+
+    function distance(city1, city2) {
+      return Math.sqrt(
+        Math.pow(city1[0] - city2[0], 2) +
+        Math.pow(city1[1] - city2[1], 2)
+      );
+    }
+
+    function fitness(route) {
+      let total = 0;
+      for (let i = 0; i < route.length - 1; i++) {
+        total += distance(cities[route[i]], cities[route[i + 1]]);
+      }
+      total += distance(cities[route[route.length - 1]], cities[route[0]]);
+      return total;
+    }
+
+    function selection(population) {
+      return [...population].sort((a, b) => fitness(a) - fitness(b)).slice(0, population.length / 2);
+    }
+
+    function crossover(p1, p2) {
+      const point = Math.floor(Math.random() * p1.length);
+      const child1 = [...p1.slice(0, point), ...p2.filter(x => !p1.slice(0, point).includes(x))];
+      const child2 = [...p2.slice(0, point), ...p1.filter(x => !p2.slice(0, point).includes(x))];
+      return [child1, child2];
+    }
+
+    function mutate(route) {
+      const i = Math.floor(Math.random() * route.length);
+      const j = Math.floor(Math.random() * route.length);
+      [route[i], route[j]] = [route[j], route[i]];
+      return route;
+    }
+
+    function createPopulation(size) {
+      let pop = [];
+      for (let i = 0; i < size; i++) {
+        const route = [...Array(cities.length).keys()];
+        for (let j = route.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [route[j], route[k]] = [route[k], route[j]];
+        }
+        pop.push(route);
+      }
+      return pop;
+    }
+
+    function runGA() {
+      const popSize = parseInt(document.getElementById("population").value);
+      const gens = parseInt(document.getElementById("generations").value);
+      let pop = createPopulation(popSize);
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= gens; gen++) {
+        const selected = selection(pop);
+        let nextGen = [];
+
+        for (let i = 0; i < selected.length; i += 2) {
+          const [c1, c2] = crossover(selected[i], selected[i + 1] || selected[0]);
+          nextGen.push(mutate(c1));
+          nextGen.push(mutate(c2));
+        }
+
+        pop = nextGen;
+        const best = selection(pop)[0];
+        const distance = fitness(best).toFixed(2);
+        output.innerHTML += `<strong>Generación ${gen}:</strong><br>Ruta: ${best.join(" ➝ ")} ➝ ${best[0]}<br>Distancia total: <span class="highlight">${distance}</span><br><br>`;
+      }
+    }
+  </script>
+</body>
+</html>
