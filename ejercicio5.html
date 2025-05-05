@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 5 - Número Primo Más Cercano</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            color: white;
+        }
+        input[type="number"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            width: 100px;
+        }
+        .btn-run {
+            background-color: #6f42c1;
+            margin-top: 10px;
+        }
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔎 Ejercicio 5: Encontrar el Número Primo Más Cercano</h1>
+        <p>Este algoritmo genético intenta encontrar el número primo más cercano a un valor dado.</p>
+
+        <div class="input-group">
+            <label for="target">Número objetivo:</label>
+            <input type="number" id="target" value="100">
+        </div>
+
+        <div class="input-group">
+            <label for="generations">Número de generaciones:</label>
+            <input type="number" id="generations" value="20" min="1">
+        </div>
+
+        <div class="input-group">
+            <label for="population">Tamaño de población:</label>
+            <input type="number" id="population" value="10" min="2">
+        </div>
+
+        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+        <div class="result-box" id="output"></div>
+    </div>
+
+    <script>
+        function isPrime(n) {
+            if (n < 2) return false;
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        function fitness(candidate, target) {
+            const penalty = isPrime(candidate) ? 0 : 1000;
+            return Math.abs(candidate - target) + penalty;
+        }
+
+        function createIndividual(target) {
+            return target + Math.floor(Math.random() * 20 - 10);
+        }
+
+        function createPopulation(size, target) {
+            return Array.from({ length: size }, () => createIndividual(target));
+        }
+
+        function selection(pop, target) {
+            return [...pop].sort((a, b) => fitness(a, target) - fitness(b, target)).slice(0, Math.floor(pop.length / 2));
+        }
+
+        function crossover(p1, p2) {
+            return Math.round((p1 + p2) / 2);
+        }
+
+        function mutate(n) {
+            return n + Math.floor(Math.random() * 10 - 5);
+        }
+
+        function runGA() {
+            const target = parseInt(document.getElementById("target").value);
+            const generations = parseInt(document.getElementById("generations").value);
+            const populationSize = parseInt(document.getElementById("population").value);
+
+            let population = createPopulation(populationSize, target);
+            const output = document.getElementById("output");
+            output.innerHTML = "";
+
+            for (let gen = 1; gen <= generations; gen++) {
+                const selected = selection(population, target);
+                const nextGen = [];
+
+                for (let i = 0; i < selected.length; i += 2) {
+                    const p1 = selected[i];
+                    const p2 = selected[i + 1] || selected[0];
+                    nextGen.push(mutate(crossover(p1, p2)));
+                    nextGen.push(mutate(crossover(p2, p1)));
+                }
+
+                population = nextGen;
+                const best = selection(population, target)[0];
+                output.innerHTML += `<strong>Generación ${gen}:</strong><br>` +
+                    `Mejor candidato: <span style="color:#00ff88">${best}</span> ` +
+                    `| ¿Es primo? <strong>${isPrime(best) ? '✅ Sí' : '❌ No'}</strong> ` +
+                    `| Distancia: ${Math.abs(best - target)}<br><br>`;
+            }
+        }
+    </script>
+</body>
+</html>
