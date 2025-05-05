@@ -38,8 +38,8 @@
       margin: 10px 0;
       display: flex;
       flex-direction: column;
-      gap: 5px;
       color: white;
+      gap: 5px;
     }
 
     input[type="number"] {
@@ -148,7 +148,7 @@
     }
 
     function selection(pop) {
-      return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, pop.length / 2);
+      return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, Math.floor(pop.length / 2));
     }
 
     function crossover(p1, p2) {
@@ -169,4 +169,43 @@
       const poblacionTam = parseInt(document.getElementById("poblacion").value);
       let pop = createPopulation(poblacionTam);
       const output = document.getElementById("output");
-      output.inne
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= generaciones; gen++) {
+        const seleccionados = selection(pop);
+        const nextGen = [];
+
+        for (let i = 0; i < seleccionados.length; i += 2) {
+          const p1 = seleccionados[i];
+          const p2 = seleccionados[i + 1] || seleccionados[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
+        }
+
+        pop = nextGen;
+
+        const best = selection(pop)[0];
+        let retorno = 0, riesgo = 0;
+        let table = "<table><tr><th>Activo</th><th>Peso</th><th>Retorno</th><th>Riesgo</th></tr>";
+
+        for (let i = 0; i < activos.length; i++) {
+          retorno += best[i] * activos[i].retorno;
+          riesgo += best[i] * activos[i].riesgo;
+          table += `<tr><td>${activos[i].nombre}</td><td>${(best[i] * 100).toFixed(1)}%</td><td>${(activos[i].retorno * 100).toFixed(1)}%</td><td>${(activos[i].riesgo * 100).toFixed(1)}%</td></tr>`;
+        }
+
+        table += "</table>";
+
+        output.innerHTML += `
+          <strong>Generación ${gen}:</strong><br>
+          ${table}
+          <br>📈 Retorno esperado: ${(retorno * 100).toFixed(2)}%
+          <br>📉 Riesgo estimado: ${(riesgo * 100).toFixed(2)}%
+          <br>🔁 Rendimiento/Riesgo: ${(retorno / riesgo).toFixed(2)}
+          <div class='bar' style='width:${Math.min((retorno / riesgo) * 25, 100)}%'></div><br><br>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
