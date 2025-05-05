@@ -1,47 +1,97 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ejercicio 22 - Optimización de Cartera de Inversión</title>
-  <link rel="stylesheet" href="styles.css">
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(to right, #330000, #660000, #990000);
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px black;
+    }
+
+    p {
+      margin-bottom: 25px;
+    }
+
     .input-group {
       margin: 10px 0;
       display: flex;
       flex-direction: column;
+      gap: 5px;
       color: white;
     }
+
     input[type="number"] {
       padding: 5px;
       border-radius: 5px;
       border: none;
       width: 120px;
     }
+
     .btn-run {
       background-color: #2ecc71;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
+
+    .btn-run:hover {
+      background-color: #27ae60;
+    }
+
     .result-box {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
       color: white;
       padding: 15px;
       margin-top: 20px;
       border-radius: 10px;
       font-family: monospace;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      width: 100%;
+      box-sizing: border-box;
     }
+
     .bar {
       height: 10px;
       background: #2ecc71;
       border-radius: 4px;
       margin: 5px 0;
     }
+
     table {
       width: 100%;
       color: white;
       border-collapse: collapse;
       margin-top: 10px;
     }
+
     th, td {
       padding: 5px;
       border: 1px solid #ccc;
@@ -50,100 +100,73 @@
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>💼 Ejercicio 22: Optimización de Cartera de Inversión</h1>
-  <p>Usamos algoritmos genéticos para asignar pesos a una cartera simulada de activos financieros y maximizar el rendimiento esperado ajustado por riesgo.</p>
+  <div class="container">
+    <h1>💼 Ejercicio 22: Optimización de Cartera de Inversión</h1>
+    <p>Usamos algoritmos genéticos para asignar pesos a una cartera simulada de activos financieros y maximizar el rendimiento esperado ajustado por riesgo.</p>
 
-  <div class="input-group">
-    <label for="generaciones">Número de generaciones:</label>
-    <input type="number" id="generaciones" value="30" min="1">
+    <div class="input-group">
+      <label for="generaciones">Número de generaciones:</label>
+      <input type="number" id="generaciones" value="30" min="1">
+    </div>
+
+    <div class="input-group">
+      <label for="poblacion">Tamaño de población:</label>
+      <input type="number" id="poblacion" value="20" min="2">
+    </div>
+
+    <button class="btn-run" onclick="runGA()">▶ Ejecutar Optimización</button>
+
+    <div class="result-box" id="output"></div>
   </div>
 
-  <div class="input-group">
-    <label for="poblacion">Tamaño de población:</label>
-    <input type="number" id="poblacion" value="20" min="2">
-  </div>
+  <script>
+    const activos = [
+      { nombre: "Acciones", retorno: 0.12, riesgo: 0.20 },
+      { nombre: "Bonos", retorno: 0.06, riesgo: 0.10 },
+      { nombre: "Fondos", retorno: 0.08, riesgo: 0.12 },
+      { nombre: "ETF", retorno: 0.10, riesgo: 0.18 }
+    ];
 
-  <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Optimización</button>
-
-  <div class="result-box" id="output"></div>
-</div>
-
-<script>
-  const activos = [
-    { nombre: "Acciones", retorno: 0.12, riesgo: 0.20 },
-    { nombre: "Bonos", retorno: 0.06, riesgo: 0.10 },
-    { nombre: "Fondos", retorno: 0.08, riesgo: 0.12 },
-    { nombre: "ETF", retorno: 0.10, riesgo: 0.18 }
-  ];
-
-  function createIndividual() {
-    let w = Array.from({ length: activos.length }, () => Math.random());
-    let sum = w.reduce((a, b) => a + b, 0);
-    return w.map(v => parseFloat((v / sum).toFixed(3))); // pesos normalizados
-  }
-
-  function createPopulation(size) {
-    return Array.from({ length: size }, createIndividual);
-  }
-
-  function fitness(ind) {
-    let retorno = 0;
-    let riesgo = 0;
-    for (let i = 0; i < activos.length; i++) {
-      retorno += ind[i] * activos[i].retorno;
-      riesgo += ind[i] * activos[i].riesgo;
+    function createIndividual() {
+      let w = Array.from({ length: activos.length }, () => Math.random());
+      let sum = w.reduce((a, b) => a + b, 0);
+      return w.map(v => parseFloat((v / sum).toFixed(3)));
     }
-    return retorno / riesgo; // ratio rendimiento/riesgo
-  }
 
-  function selection(pop) {
-    return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, pop.length / 2);
-  }
+    function createPopulation(size) {
+      return Array.from({ length: size }, createIndividual);
+    }
 
-  function crossover(p1, p2) {
-    const child = p1.map((_, i) => (Math.random() < 0.5 ? p1[i] : p2[i]));
-    let sum = child.reduce((a, b) => a + b, 0);
-    return child.map(v => parseFloat((v / sum).toFixed(3))); // renormaliza
-  }
-
-  function mutate(ind) {
-    const i = Math.floor(Math.random() * ind.length);
-    ind[i] += Math.random() * 0.1 - 0.05;
-    let sum = ind.reduce((a, b) => a + b, 0);
-    return ind.map(v => parseFloat((v / sum).toFixed(3))); // renormaliza
-  }
-
-  function runGA() {
-    const generaciones = parseInt(document.getElementById("generaciones").value);
-    const poblacionTam = parseInt(document.getElementById("poblacion").value);
-    let pop = createPopulation(poblacionTam);
-    const output = document.getElementById("output");
-    output.innerHTML = "";
-
-    for (let gen = 1; gen <= generaciones; gen++) {
-      const seleccionados = selection(pop);
-      const nextGen = [];
-      for (let i = 0; i < seleccionados.length; i += 2) {
-        const p1 = seleccionados[i];
-        const p2 = seleccionados[i + 1] || seleccionados[0];
-        nextGen.push(mutate(crossover(p1, p2)));
-        nextGen.push(mutate(crossover(p2, p1)));
-      }
-      pop = nextGen;
-
-      const best = selection(pop)[0];
-      let retorno = 0, riesgo = 0;
-      let table = "<table><tr><th>Activo</th><th>Peso</th><th>Retorno</th><th>Riesgo</th></tr>";
+    function fitness(ind) {
+      let retorno = 0;
+      let riesgo = 0;
       for (let i = 0; i < activos.length; i++) {
-        retorno += best[i] * activos[i].retorno;
-        riesgo += best[i] * activos[i].riesgo;
-        table += `<tr><td>${activos[i].nombre}</td><td>${(best[i] * 100).toFixed(1)}%</td><td>${(activos[i].retorno * 100).toFixed(1)}%</td><td>${(activos[i].riesgo * 100).toFixed(1)}%</td></tr>`;
+        retorno += ind[i] * activos[i].retorno;
+        riesgo += ind[i] * activos[i].riesgo;
       }
-      table += "</table>";
-      output.innerHTML += `<strong>Generación ${gen}:</strong><br>${table}<br>📈 Retorno esperado: ${(retorno * 100).toFixed(2)}%<br>📉 Riesgo estimado: ${(riesgo * 100).toFixed(2)}%<br>🔁 Rendimiento/Riesgo: ${(retorno / riesgo).toFixed(2)}<div class='bar' style='width:${Math.min((retorno / riesgo) * 25, 100)}%'></div><br><br>`;
+      return retorno / riesgo;
     }
-  }
-</script>
-</body>
-</html>
+
+    function selection(pop) {
+      return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, pop.length / 2);
+    }
+
+    function crossover(p1, p2) {
+      const child = p1.map((_, i) => (Math.random() < 0.5 ? p1[i] : p2[i]));
+      let sum = child.reduce((a, b) => a + b, 0);
+      return child.map(v => parseFloat((v / sum).toFixed(3)));
+    }
+
+    function mutate(ind) {
+      const i = Math.floor(Math.random() * ind.length);
+      ind[i] += Math.random() * 0.1 - 0.05;
+      let sum = ind.reduce((a, b) => a + b, 0);
+      return ind.map(v => parseFloat((v / sum).toFixed(3)));
+    }
+
+    function runGA() {
+      const generaciones = parseInt(document.getElementById("generaciones").value);
+      const poblacionTam = parseInt(document.getElementById("poblacion").value);
+      let pop = createPopulation(poblacionTam);
+      const output = document.getElementById("output");
+      output.inne
