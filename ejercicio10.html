@@ -1,28 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ejercicio 10 - Optimización Red de Energía</title>
   <link rel="stylesheet" href="styles.css">
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #3d0c02, #8b0000);
+      color: white;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
     .input-group {
       margin: 10px 0;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      color: white;
     }
+
     input[type="number"] {
       padding: 5px;
       border-radius: 5px;
       border: none;
       width: 150px;
     }
+
     .btn-run {
       background-color: #f39c12;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
+
+    .btn-run:hover {
+      background-color: #d68910;
+    }
+
     .result-box {
       background: rgba(255, 255, 255, 0.1);
       color: white;
@@ -30,7 +57,11 @@
       margin-top: 20px;
       border-radius: 10px;
       font-family: monospace;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: normal;
     }
+
     .bar {
       height: 20px;
       margin: 3px 0;
@@ -59,12 +90,11 @@
   </div>
 
   <script>
-    // Individuo: [voltaje, resistencia, balance]
     function createIndividual() {
       return [
         Math.floor(Math.random() * 121 + 110), // voltaje entre 110-230 V
         Math.floor(Math.random() * 91 + 10),   // resistencia entre 10-100 Ohm
-        Math.floor(Math.random() * 101)        // distribución (porcentaje de balance entre nodos)
+        Math.floor(Math.random() * 101)        // balance (0-100%)
       ];
     }
 
@@ -72,11 +102,10 @@
       return Array.from({ length: size }, createIndividual);
     }
 
-    // Menor pérdida = mejor (calculado con una fórmula simulada)
     function fitness(ind) {
       const [V, R, B] = ind;
       const potencia = (V * V) / R;
-      const perdidas = potencia * (1 - B / 100); // simulamos que mejor balance reduce pérdidas
+      const perdidas = potencia * (1 - B / 100);
       return -perdidas;
     }
 
@@ -85,8 +114,7 @@
     }
 
     function crossover(p1, p2) {
-      const child = p1.map((val, i) => (Math.random() < 0.5 ? val : p2[i]));
-      return child;
+      return p1.map((val, i) => (Math.random() < 0.5 ? val : p2[i]));
     }
 
     function mutate(ind) {
@@ -104,6 +132,7 @@
       let poblacion = createPopulation(poblacionTam);
 
       output.innerHTML = "";
+
       for (let gen = 1; gen <= generaciones; gen++) {
         const seleccionados = selection(poblacion);
         const nextGen = [];
@@ -129,6 +158,8 @@
           <br>
         `;
       }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
   </script>
 </body>
