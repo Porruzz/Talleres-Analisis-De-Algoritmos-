@@ -1,123 +1,141 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AG - Selección de Características</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .result-box {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 10px;
-            font-family: monospace;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .btn-run {
-            background-color: #28a745;
-            margin-top: 20px;
-        }
-        .highlight {
-            color: #00ff88;
-            font-weight: bold;
-        }
-        ul.features {
-            padding: 0;
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        ul.features li {
-            width: 25px;
-            height: 25px;
-            text-align: center;
-            border-radius: 5px;
-            line-height: 25px;
-            background-color: #aaa;
-        }
-        ul.features li.active {
-            background-color: #28a745;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 9 - Selección de Características</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: white;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 150px;
+    }
+    .btn-run {
+      background-color: #00c851;
+      margin-top: 10px;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+    }
+    ul.features {
+      padding: 0;
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    ul.features li {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      border-radius: 5px;
+      line-height: 30px;
+      background-color: #555;
+    }
+    ul.features li.active {
+      background-color: #00c851;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧬 Algoritmo Genético - Selección de Características</h1>
-        <p>Este ejemplo simula cómo un algoritmo genético selecciona automáticamente las características más relevantes para un modelo de aprendizaje automático.</p>
-        <p>💡 Cada <span class="highlight">1</span> representa una característica seleccionada. El objetivo es tener buenas combinaciones sin usar más de 4 características.</p>
-        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
-        <div class="result-box" id="output"></div>
+  <div class="container">
+    <h1>🧠 Ejercicio 9: Selección de Características</h1>
+    <p>Usamos un algoritmo genético para seleccionar las características más relevantes de un modelo de clasificación simulado. Cuantas más características activas y útiles, mejor. Penaliza el exceso.</p>
+
+    <div class="input-group">
+      <label for="features">Número total de características:</label>
+      <input type="number" id="features" value="8" min="4" max="20" />
     </div>
 
-    <script>
-        const numFeatures = 6;
-        const populationSize = 10;
-        const generations = 10;
+    <div class="input-group">
+      <label for="generaciones">Número de generaciones:</label>
+      <input type="number" id="generaciones" value="20" min="1" />
+    </div>
 
-        function fitness(individual) {
-            const count = individual.reduce((a, b) => a + b, 0);
-            return count <= 4 ? count : 4 - (count - 4); 
+    <div class="input-group">
+      <label for="poblacion">Tamaño de población:</label>
+      <input type="number" id="poblacion" value="10" min="2" />
+    </div>
+
+    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    function fitness(ind, max) {
+      const act = ind.reduce((a, b) => a + b, 0);
+      const useful = ind.filter((v, i) => v === 1 && i % 2 === 0).length; // características "útiles"
+      return act <= max ? useful : useful - (act - max);
+    }
+
+    function createIndividual(n) {
+      return Array.from({ length: n }, () => Math.round(Math.random()));
+    }
+
+    function createPopulation(size, n) {
+      return Array.from({ length: size }, () => createIndividual(n));
+    }
+
+    function selection(pop, max) {
+      return [...pop].sort((a, b) => fitness(b, max) - fitness(a, max)).slice(0, Math.floor(pop.length / 2));
+    }
+
+    function crossover(p1, p2) {
+      const point = Math.floor(Math.random() * p1.length);
+      return [...p1.slice(0, point), ...p2.slice(point)];
+    }
+
+    function mutate(ind) {
+      const i = Math.floor(Math.random() * ind.length);
+      ind[i] = ind[i] === 1 ? 0 : 1;
+      return ind;
+    }
+
+    function render(ind) {
+      return `<ul class="features">${ind.map((v) => `<li class="${v === 1 ? 'active' : ''}">${v}</li>`).join('')}</ul>`;
+    }
+
+    function runGA() {
+      const n = parseInt(document.getElementById("features").value);
+      const generaciones = parseInt(document.getElementById("generaciones").value);
+      const poblacionTam = parseInt(document.getElementById("poblacion").value);
+      const max = Math.floor(n / 2) + 1; // límite razonable de features
+
+      let pop = createPopulation(poblacionTam, n);
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= generaciones; gen++) {
+        const seleccionados = selection(pop, max);
+        const nextGen = [];
+        for (let i = 0; i < seleccionados.length; i += 2) {
+          const p1 = seleccionados[i];
+          const p2 = seleccionados[i + 1] || seleccionados[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
         }
-
-        function createIndividual() {
-            return Array.from({ length: numFeatures }, () => Math.round(Math.random()));
-        }
-
-        function createPopulation() {
-            return Array.from({ length: populationSize }, createIndividual);
-        }
-
-        function selection(pop) {
-            return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, populationSize / 2);
-        }
-
-        function crossover(p1, p2) {
-            const point = Math.floor(Math.random() * numFeatures);
-            const child1 = [...p1.slice(0, point), ...p2.slice(point)];
-            const child2 = [...p2.slice(0, point), ...p1.slice(point)];
-            return [child1, child2];
-        }
-
-        function mutate(ind) {
-            const i = Math.floor(Math.random() * numFeatures);
-            ind[i] = ind[i] === 1 ? 0 : 1;
-            return ind;
-        }
-
-        function renderIndividual(ind) {
-            return `<ul class="features">${ind.map(val => `<li class="${val === 1 ? 'active' : ''}">${val}</li>`).join('')}</ul>`;
-        }
-
-        function runGA() {
-            let population = createPopulation();
-            let output = document.getElementById("output");
-            output.innerHTML = "";
-
-            for (let gen = 1; gen <= generations; gen++) {
-                const selected = selection(population);
-                let nextGen = [];
-
-                for (let i = 0; i < selected.length; i += 2) {
-                    const [c1, c2] = crossover(selected[i], selected[i + 1] || selected[0]);
-                    nextGen.push(mutate(c1));
-                    nextGen.push(mutate(c2));
-                }
-
-                population = nextGen;
-                const best = selection(population)[0];
-                output.innerHTML += `
-                    <strong>Generación ${gen}</strong><br>
-                    ${renderIndividual(best)}
-                    Aptitud: <span class="highlight">${fitness(best)}</span><br><br>
-                `;
-            }
-        }
-    </script>
+        pop = nextGen;
+        const best = selection(pop, max)[0];
+        output.innerHTML += `<strong>Generación ${gen}:</strong><br>${render(best)}<br>Aptitud: ${fitness(best, max)}<br><br>`;
+      }
+    }
+  </script>
 </body>
 </html>
