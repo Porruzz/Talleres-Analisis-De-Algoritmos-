@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 10 - Optimización Red de Energía</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: white;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 150px;
+    }
+    .btn-run {
+      background-color: #f39c12;
+      margin-top: 10px;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+    }
+    .bar {
+      height: 20px;
+      margin: 3px 0;
+      background: #f39c12;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ Ejercicio 10: Optimización de una Red de Distribución Eléctrica</h1>
+    <p>Este algoritmo genético ajusta parámetros de una red eléctrica simulada (voltajes, resistencias y distribución) para minimizar las pérdidas de energía.</p>
+
+    <div class="input-group">
+      <label for="generaciones">Número de generaciones:</label>
+      <input type="number" id="generaciones" value="20" min="1">
+    </div>
+
+    <div class="input-group">
+      <label for="poblacion">Tamaño de población:</label>
+      <input type="number" id="poblacion" value="10" min="2">
+    </div>
+
+    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    // Individuo: [voltaje, resistencia, balance]
+    function createIndividual() {
+      return [
+        Math.floor(Math.random() * 121 + 110), // voltaje entre 110-230 V
+        Math.floor(Math.random() * 91 + 10),   // resistencia entre 10-100 Ohm
+        Math.floor(Math.random() * 101)        // distribución (porcentaje de balance entre nodos)
+      ];
+    }
+
+    function createPopulation(size) {
+      return Array.from({ length: size }, createIndividual);
+    }
+
+    // Menor pérdida = mejor (calculado con una fórmula simulada)
+    function fitness(ind) {
+      const [V, R, B] = ind;
+      const potencia = (V * V) / R;
+      const perdidas = potencia * (1 - B / 100); // simulamos que mejor balance reduce pérdidas
+      return -perdidas;
+    }
+
+    function selection(pop) {
+      return [...pop].sort((a, b) => fitness(b) - fitness(a)).slice(0, Math.floor(pop.length / 2));
+    }
+
+    function crossover(p1, p2) {
+      const child = p1.map((val, i) => (Math.random() < 0.5 ? val : p2[i]));
+      return child;
+    }
+
+    function mutate(ind) {
+      const i = Math.floor(Math.random() * ind.length);
+      if (i === 0) ind[i] = Math.floor(Math.random() * 121 + 110);
+      else if (i === 1) ind[i] = Math.floor(Math.random() * 91 + 10);
+      else ind[i] = Math.floor(Math.random() * 101);
+      return ind;
+    }
+
+    function runGA() {
+      const generaciones = parseInt(document.getElementById("generaciones").value);
+      const poblacionTam = parseInt(document.getElementById("poblacion").value);
+      const output = document.getElementById("output");
+      let poblacion = createPopulation(poblacionTam);
+
+      output.innerHTML = "";
+      for (let gen = 1; gen <= generaciones; gen++) {
+        const seleccionados = selection(poblacion);
+        const nextGen = [];
+
+        for (let i = 0; i < seleccionados.length; i += 2) {
+          const p1 = seleccionados[i];
+          const p2 = seleccionados[i + 1] || seleccionados[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
+        }
+
+        poblacion = nextGen;
+        const best = selection(poblacion)[0];
+        const [V, R, B] = best;
+        const potencia = (V * V) / R;
+        const perdidas = potencia * (1 - B / 100);
+
+        output.innerHTML += `
+          <strong>Generación ${gen}:</strong><br>
+          <div>Voltaje: ${V} V | Resistencia: ${R} Ω | Balance: ${B}%</div>
+          <div>🔻 Pérdidas estimadas: <span style="color:#00ff88">${perdidas.toFixed(2)} W</span></div>
+          <div class="bar" style="width: ${Math.min(perdidas / 10, 100)}%"></div>
+          <br>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
