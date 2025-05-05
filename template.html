@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Título del Ejercicio</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #3d0c02, #8b0000);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 100px;
+    }
+
+    .btn-run {
+      background-color: #28a745;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .btn-run:hover {
+      background-color: #218838;
+    }
+
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔬 Título del Ejercicio</h1>
+    <p>Descripción del ejercicio o del objetivo del algoritmo.</p>
+
+    <!-- INPUTS -->
+    <div class="input-group">
+      <label for="param1">Parámetro 1 (ej. generaciones):</label>
+      <input type="number" id="param1" value="20" min="1" />
+    </div>
+
+    <!-- AGREGAR MÁS INPUTS SEGÚN EL EJERCICIO -->
+
+    <!-- BOTÓN -->
+    <button class="btn-run" onclick="ejecutarAlgoritmo()">▶ Ejecutar Algoritmo</button>
+
+    <!-- RESULTADOS -->
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    function ejecutarAlgoritmo() {
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      // Aquí va la lógica del algoritmo genético
+      // Puedes copiar el algoritmo desde tu ejercicio actual
+      output.innerHTML += `Generación 1:\nResultado de ejemplo...\n\n`;
+    }
+  </script>
+</body>
+</html>
