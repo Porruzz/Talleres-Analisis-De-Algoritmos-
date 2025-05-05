@@ -10,8 +10,6 @@
       padding: 0;
       min-height: 100vh;
       background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
-      background-attachment: fixed;
-      background-size: cover;
       font-family: Arial, sans-serif;
       color: white;
     }
@@ -47,6 +45,7 @@
       display: flex;
       flex-direction: column;
       gap: 5px;
+      margin-bottom: 10px;
       text-align: left;
       width: 200px;
     }
@@ -112,7 +111,6 @@
     </div>
 
     <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
-
     <div class="result-box" id="output"></div>
   </div>
 
@@ -137,9 +135,9 @@
 
     function createIndividual() {
       return [
-        parseFloat((Math.random() * 10).toFixed(2)), // Kp
-        parseFloat((Math.random() * 1).toFixed(2)),  // Ki
-        parseFloat((Math.random() * 1).toFixed(2))   // Kd
+        parseFloat((Math.random() * 10).toFixed(2)),
+        parseFloat((Math.random() * 1).toFixed(2)),
+        parseFloat((Math.random() * 1).toFixed(2))
       ];
     }
 
@@ -148,7 +146,7 @@
     }
 
     function fitness(ind) {
-      return -simulatePID(ind); // minimizar el error
+      return -simulatePID(ind);
     }
 
     function selection(pop) {
@@ -176,21 +174,17 @@
       for (let gen = 1; gen <= generaciones; gen++) {
         const seleccionados = selection(pop);
         const nextGen = [];
-
         for (let i = 0; i < seleccionados.length; i += 2) {
           const p1 = seleccionados[i];
           const p2 = seleccionados[i + 1] || seleccionados[0];
           nextGen.push(mutate(crossover(p1, p2)));
           nextGen.push(mutate(crossover(p2, p1)));
         }
-
         pop = nextGen;
-        const best = selection(poblacion)[0];
+        const best = selection(pop)[0];
         const error = -fitness(best).toFixed(3);
-        output.innerHTML += `Generación ${gen}:\nPID = Kp: ${best[0]}, Ki: ${best[1]}, Kd: ${best[2]}\nError cuadrático: ${error}\n<div class="bar" style="width:${Math.min(error * 10, 100)}%"></div>\n\n`;
+        output.innerHTML += `<strong>Generación ${gen}:</strong><br>PID = Kp: ${best[0]}, Ki: ${best[1]}, Kd: ${best[2]}<br>Error cuadrático: <span style='color: #00ff88'>${error}</span><div class='bar' style='width:${Math.min(error * 10, 100)}%'></div><br>`;
       }
-
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
   </script>
 </body>
