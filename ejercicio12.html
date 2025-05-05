@@ -4,45 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ejercicio 12 - Planificación de Rutas de Vehículos</title>
-  <link rel="stylesheet" href="styles.css" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      background: linear-gradient(to bottom right, #3a1c71, #d76d77, #ffaf7b);
+      min-height: 100vh;
+      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
       background-attachment: fixed;
       background-size: cover;
-      color: white;
       font-family: Arial, sans-serif;
-      min-height: 100vh;
+      color: white;
     }
 
     .container {
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 30px;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
 
-    canvas {
-      background: white;
-      border: 2px solid #444;
-      border-radius: 10px;
-      margin-top: 20px;
-      display: block;
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px black;
+    }
+
+    p {
+      margin-bottom: 25px;
     }
 
     .input-group {
-      margin: 10px 0;
       display: flex;
       flex-direction: column;
       gap: 5px;
+      margin-bottom: 10px;
+      text-align: left;
+      width: 200px;
     }
 
     input[type="number"] {
       padding: 5px;
       border-radius: 5px;
       border: none;
-      width: 100px;
+      width: 100%;
+    }
+
+    .form-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
     }
 
     .btn-run {
@@ -60,6 +74,13 @@
       background-color: #217dbb;
     }
 
+    canvas {
+      background: white;
+      border: 2px solid #444;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
     .result-box {
       background: rgba(0, 0, 0, 0.3);
       color: white;
@@ -67,9 +88,11 @@
       margin-top: 20px;
       border-radius: 10px;
       font-family: monospace;
-      max-height: 500px;
+      max-height: 400px;
       overflow-y: auto;
       white-space: pre-wrap;
+      width: 100%;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -78,16 +101,19 @@
     <h1>🚚 Ejercicio 12: Planificación de Rutas para Vehículos</h1>
     <p>Este algoritmo genético busca la mejor ruta de entrega entre ciudades para minimizar el tiempo total de viaje.</p>
 
-    <div class="input-group">
-      <label for="generaciones">Número de generaciones:</label>
-      <input type="number" id="generaciones" value="20" min="1" />
-    </div>
-    <div class="input-group">
-      <label for="poblacion">Tamaño de población:</label>
-      <input type="number" id="poblacion" value="10" min="2" />
+    <div class="form-wrapper">
+      <div class="input-group">
+        <label for="generaciones">Número de generaciones:</label>
+        <input type="number" id="generaciones" value="20" min="1" />
+      </div>
+      <div class="input-group">
+        <label for="poblacion">Tamaño de población:</label>
+        <input type="number" id="poblacion" value="10" min="2" />
+      </div>
     </div>
 
     <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
     <canvas id="canvas" width="400" height="400"></canvas>
     <div class="result-box" id="output"></div>
   </div>
@@ -176,6 +202,7 @@
       for (let gen = 1; gen <= generaciones; gen++) {
         const seleccionados = selection(poblacion);
         const nextGen = [];
+
         for (let i = 0; i < seleccionados.length; i += 2) {
           const p1 = seleccionados[i];
           const p2 = seleccionados[i + 1] || seleccionados[0];
