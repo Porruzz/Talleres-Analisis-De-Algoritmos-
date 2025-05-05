@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 12 - Planificación de Rutas de Vehículos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    canvas {
+      background: white;
+      border: 2px solid #444;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: white;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 100px;
+    }
+    .btn-run {
+      background-color: #3498db;
+      margin-top: 10px;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚚 Ejercicio 12: Planificación de Rutas para Vehículos</h1>
+    <p>Este algoritmo genético busca la mejor ruta de entrega entre ciudades para minimizar el tiempo total de viaje.</p>
+
+    <div class="input-group">
+      <label for="generaciones">Número de generaciones:</label>
+      <input type="number" id="generaciones" value="20" min="1" />
+    </div>
+    <div class="input-group">
+      <label for="poblacion">Tamaño de población:</label>
+      <input type="number" id="poblacion" value="10" min="2" />
+    </div>
+
+    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const cities = [
+      { x: 50, y: 350 },
+      { x: 100, y: 100 },
+      { x: 250, y: 80 },
+      { x: 300, y: 200 },
+      { x: 350, y: 50 }
+    ];
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function fitness(route) {
+      let total = 0;
+      for (let i = 0; i < route.length - 1; i++) {
+        total += distance(cities[route[i]], cities[route[i + 1]]);
+      }
+      total += distance(cities[route[route.length - 1]], cities[route[0]]);
+      return total;
+    }
+
+    function createIndividual() {
+      const route = [...Array(cities.length).keys()];
+      for (let i = route.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [route[i], route[j]] = [route[j], route[i]];
+      }
+      return route;
+    }
+
+    function createPopulation(size) {
+      return Array.from({ length: size }, createIndividual);
+    }
+
+    function selection(pop) {
+      return [...pop].sort((a, b) => fitness(a) - fitness(b)).slice(0, Math.floor(pop.length / 2));
+    }
+
+    function crossover(p1, p2) {
+      const point = Math.floor(Math.random() * p1.length);
+      const child = [...p1.slice(0, point), ...p2.filter(c => !p1.slice(0, point).includes(c))];
+      return child;
+    }
+
+    function mutate(route) {
+      const [i, j] = [Math.floor(Math.random() * route.length), Math.floor(Math.random() * route.length)];
+      [route[i], route[j]] = [route[j], route[i]];
+      return route;
+    }
+
+    function drawRoute(route) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.moveTo(cities[route[0]].x, cities[route[0]].y);
+      for (let i = 1; i < route.length; i++) {
+        ctx.lineTo(cities[route[i]].x, cities[route[i]].y);
+      }
+      ctx.lineTo(cities[route[0]].x, cities[route[0]].y);
+      ctx.strokeStyle = "#3498db";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      for (let i = 0; i < cities.length; i++) {
+        ctx.beginPath();
+        ctx.arc(cities[i].x, cities[i].y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.fillText(`P${i}`, cities[i].x + 8, cities[i].y);
+      }
+    }
+
+    function runGA() {
+      const generaciones = parseInt(document.getElementById("generaciones").value);
+      const poblacionTam = parseInt(document.getElementById("poblacion").value);
+      const output = document.getElementById("output");
+      let poblacion = createPopulation(poblacionTam);
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= generaciones; gen++) {
+        const seleccionados = selection(poblacion);
+        const nextGen = [];
+        for (let i = 0; i < seleccionados.length; i += 2) {
+          const p1 = seleccionados[i];
+          const p2 = seleccionados[i + 1] || seleccionados[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
+        }
+        poblacion = nextGen;
+        const best = selection(poblacion)[0];
+        drawRoute(best);
+        output.innerHTML += `<strong>Generación ${gen}:</strong><br>Ruta: [${best.join(" → ")}]<br>Distancia total: ${fitness(best).toFixed(2)} unidades<br><br>`;
+      }
+    }
+  </script>
+</body>
+</html>
