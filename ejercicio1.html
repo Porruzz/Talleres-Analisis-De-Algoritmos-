@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 1 - Minimización de función cuadrática</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .btn-run {
+            background-color: #28a745;
+            margin-top: 20px;
+        }
+        .highlight {
+            color: #00ff88;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📉 Ejercicio 1: Minimización de una Función Cuadrática</h1>
+        <p>Este ejercicio busca minimizar la función <code>f(x) = x²</code> usando un algoritmo genético.</p>
+        <p>🎯 Objetivo: Encontrar el valor más cercano a 0, que es el mínimo de la función cuadrática.</p>
+        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+        <div class="result-box" id="output"></div>
+    </div>
+
+    <script>
+        const populationSize = 10;
+        const generations = 20;
+
+        function fitness(x) {
+            return -(x * x); // Queremos minimizar x^2, así que usamos valor negativo como aptitud
+        }
+
+        function createIndividual() {
+            return (Math.random() * 20 - 10).toFixed(4); // Valor entre -10 y 10
+        }
+
+        function createPopulation() {
+            return Array.from({ length: populationSize }, createIndividual);
+        }
+
+        function selection(pop) {
+            return [...pop].sort((a, b) => fitness(parseFloat(b)) - fitness(parseFloat(a))).slice(0, populationSize / 2);
+        }
+
+        function crossover(p1, p2) {
+            const alpha = Math.random();
+            const child = (alpha * parseFloat(p1) + (1 - alpha) * parseFloat(p2)).toFixed(4);
+            return child;
+        }
+
+        function mutate(x) {
+            const mutation = (Math.random() * 2 - 1).toFixed(4); // Valor entre -1 y 1
+            return (parseFloat(x) + parseFloat(mutation)).toFixed(4);
+        }
+
+        function runGA() {
+            let population = createPopulation();
+            const output = document.getElementById("output");
+            output.innerHTML = "";
+
+            for (let gen = 1; gen <= generations; gen++) {
+                const selected = selection(population);
+                let nextGen = [];
+
+                for (let i = 0; i < selected.length; i += 2) {
+                    const p1 = selected[i];
+                    const p2 = selected[i + 1] || selected[0];
+                    const child1 = mutate(crossover(p1, p2));
+                    const child2 = mutate(crossover(p2, p1));
+                    nextGen.push(child1, child2);
+                }
+
+                population = nextGen;
+                const best = selection(population)[0];
+                output.innerHTML += `<strong>Generación ${gen}:</strong><br>Mejor individuo: <span class="highlight">x = ${best}</span> | f(x) = ${(parseFloat(best)**2).toFixed(4)}<br><br>`;
+            }
+        }
+    </script>
+</body>
+</html>
