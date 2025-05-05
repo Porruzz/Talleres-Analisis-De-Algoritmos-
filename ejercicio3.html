@@ -1,196 +1,198 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ejercicio 3 - Problema del Viajante</title>
-    <link rel="stylesheet" href="styles.css" />
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to right, #3d0c02, #8b0000);
-            color: white;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            overflow-y: auto;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 3 - Problema del Viajante</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #3d0c02, #8b0000);
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px;
-        }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+    }
 
-        canvas {
-            background-color: #fff;
-            border: 2px solid #444;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: block;
-        }
+    canvas {
+      background-color: #fff;
+      border: 2px solid #444;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: block;
+    }
 
-        .input-group {
-            margin: 10px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-        input[type="number"] {
-            padding: 5px;
-            border-radius: 5px;
-            border: none;
-            width: 100px;
-        }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 100px;
+    }
 
-        .btn-run {
-            background-color: #007bff;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
+    .btn-run {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
 
-        .btn-run:hover {
-            background-color: #0056b3;
-        }
+    .btn-run:hover {
+      background-color: #0056b3;
+    }
 
-        .result-box {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 10px;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-    </style>
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚗 Ejercicio 3: Problema del Vendedor Viajero (TSP)</h1>
-        <p>Este ejercicio busca encontrar la ruta más corta que visita 5 ciudades exactamente una vez y regresa al inicio.</p>
+  <div class="container">
+    <h1>🚗 Ejercicio 3: Problema del Vendedor Viajero (TSP)</h1>
+    <p>Este ejercicio busca encontrar la ruta más corta que visita 5 ciudades exactamente una vez y regresa al inicio.</p>
 
-        <div class="input-group">
-            <label for="generations">Número de generaciones:</label>
-            <input type="number" id="generations" value="20" min="1">
-        </div>
-
-        <div class="input-group">
-            <label for="population">Tamaño de población:</label>
-            <input type="number" id="population" value="10" min="2">
-        </div>
-
-        <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
-
-        <canvas id="canvas" width="400" height="400"></canvas>
-        <div class="result-box" id="output"></div>
+    <div class="input-group">
+      <label for="generations">Número de generaciones:</label>
+      <input type="number" id="generations" value="20" min="1" />
     </div>
 
-    <script>
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
+    <div class="input-group">
+      <label for="population">Tamaño de población:</label>
+      <input type="number" id="population" value="10" min="2" />
+    </div>
 
-        const cities = [
-            { x: 50, y: 350 },
-            { x: 100, y: 100 },
-            { x: 200, y: 300 },
-            { x: 300, y: 150 },
-            { x: 350, y: 50 }
-        ];
+    <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
 
-        function distance(a, b) {
-            return Math.hypot(a.x - b.x, a.y - b.y);
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const cities = [
+      { x: 50, y: 350 },
+      { x: 100, y: 100 },
+      { x: 200, y: 300 },
+      { x: 300, y: 150 },
+      { x: 350, y: 50 }
+    ];
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function fitness(route) {
+      let total = 0;
+      for (let i = 0; i < route.length - 1; i++) {
+        total += distance(cities[route[i]], cities[route[i + 1]]);
+      }
+      total += distance(cities[route[route.length - 1]], cities[route[0]]);
+      return total;
+    }
+
+    function createPopulation(size) {
+      const population = [];
+      for (let i = 0; i < size; i++) {
+        const route = [...Array(cities.length).keys()];
+        for (let j = route.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [route[j], route[k]] = [route[k], route[j]];
+        }
+        population.push(route);
+      }
+      return population;
+    }
+
+    function selection(pop) {
+      return [...pop].sort((a, b) => fitness(a) - fitness(b)).slice(0, pop.length / 2);
+    }
+
+    function crossover(p1, p2) {
+      const point = Math.floor(Math.random() * p1.length);
+      const child = p1.slice(0, point).concat(p2.filter(city => !p1.slice(0, point).includes(city)));
+      return child;
+    }
+
+    function mutate(route) {
+      const [i, j] = [Math.floor(Math.random() * route.length), Math.floor(Math.random() * route.length)];
+      [route[i], route[j]] = [route[j], route[i]];
+      return route;
+    }
+
+    function drawRoute(route) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#007bff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cities[route[0]].x, cities[route[0]].y);
+      for (let i = 1; i < route.length; i++) {
+        ctx.lineTo(cities[route[i]].x, cities[route[i]].y);
+      }
+      ctx.lineTo(cities[route[0]].x, cities[route[0]].y);
+      ctx.stroke();
+
+      for (let i = 0; i < cities.length; i++) {
+        ctx.beginPath();
+        ctx.arc(cities[i].x, cities[i].y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.fillText(`C${i}`, cities[i].x + 8, cities[i].y);
+      }
+    }
+
+    function runGA() {
+      const generations = parseInt(document.getElementById("generations").value);
+      const populationSize = parseInt(document.getElementById("population").value);
+      let population = createPopulation(populationSize);
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= generations; gen++) {
+        const selected = selection(population);
+        const nextGen = [];
+
+        for (let i = 0; i < selected.length; i += 2) {
+          const p1 = selected[i];
+          const p2 = selected[i + 1] || selected[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
         }
 
-        function fitness(route) {
-            let total = 0;
-            for (let i = 0; i < route.length - 1; i++) {
-                total += distance(cities[route[i]], cities[route[i + 1]]);
-            }
-            total += distance(cities[route[route.length - 1]], cities[route[0]]);
-            return total;
-        }
+        population = nextGen;
+        const best = selection(population)[0];
+        drawRoute(best);
+        output.innerHTML += `Generación ${gen}:\nRuta: [${best.join(" → ")}]\nDistancia total: ${fitness(best).toFixed(2)}\n\n`;
+      }
 
-        function createPopulation(size) {
-            const population = [];
-            for (let i = 0; i < size; i++) {
-                const route = [...Array(cities.length).keys()];
-                for (let j = route.length - 1; j > 0; j--) {
-                    const k = Math.floor(Math.random() * (j + 1));
-                    [route[j], route[k]] = [route[k], route[j]];
-                }
-                population.push(route);
-            }
-            return population;
-        }
-
-        function selection(pop) {
-            return [...pop].sort((a, b) => fitness(a) - fitness(b)).slice(0, pop.length / 2);
-        }
-
-        function crossover(p1, p2) {
-            const point = Math.floor(Math.random() * p1.length);
-            const child = p1.slice(0, point).concat(p2.filter(city => !p1.slice(0, point).includes(city)));
-            return child;
-        }
-
-        function mutate(route) {
-            const [i, j] = [Math.floor(Math.random() * route.length), Math.floor(Math.random() * route.length)];
-            [route[i], route[j]] = [route[j], route[i]];
-            return route;
-        }
-
-        function drawRoute(route) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "#007bff";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cities[route[0]].x, cities[route[0]].y);
-            for (let i = 1; i < route.length; i++) {
-                ctx.lineTo(cities[route[i]].x, cities[route[i]].y);
-            }
-            ctx.lineTo(cities[route[0]].x, cities[route[0]].y);
-            ctx.stroke();
-
-            for (let i = 0; i < cities.length; i++) {
-                ctx.beginPath();
-                ctx.arc(cities[i].x, cities[i].y, 6, 0, Math.PI * 2);
-                ctx.fillStyle = "red";
-                ctx.fill();
-                ctx.fillStyle = "black";
-                ctx.fillText(`C${i}`, cities[i].x + 8, cities[i].y);
-            }
-        }
-
-        function runGA() {
-            const generations = parseInt(document.getElementById("generations").value);
-            const populationSize = parseInt(document.getElementById("population").value);
-            let population = createPopulation(populationSize);
-            const output = document.getElementById("output");
-            output.innerHTML = "";
-
-            for (let gen = 1; gen <= generations; gen++) {
-                const selected = selection(population);
-                const nextGen = [];
-
-                for (let i = 0; i < selected.length; i += 2) {
-                    const p1 = selected[i];
-                    const p2 = selected[i + 1] || selected[0];
-                    nextGen.push(mutate(crossover(p1, p2)));
-                    nextGen.push(mutate(crossover(p2, p1)));
-                }
-
-                population = nextGen;
-                const best = selection(population)[0];
-                drawRoute(best);
-                output.innerHTML += `Generación ${gen}:\nRuta: [${best.join(" → ")}]\nDistancia total: ${fitness(best).toFixed(2)}\n\n`;
-            }
-        }
-    </script>
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  </script>
 </body>
 </html>
