@@ -24,50 +24,79 @@
             color: #00ff88;
             font-weight: bold;
         }
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            color: white;
+        }
+        input[type="number"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            width: 100px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📉 Ejercicio 1: Minimización de una Función Cuadrática</h1>
-        <p>Este ejercicio busca minimizar la función <code>f(x) = x²</code> usando un algoritmo genético.</p>
-        <p>🎯 Objetivo: Encontrar el valor más cercano a 0, que es el mínimo de la función cuadrática.</p>
+        <p>Este ejercicio utiliza un algoritmo genético para encontrar el valor más cercano a 0 que minimiza <code>f(x) = x²</code>.</p>
+
+        <div class="input-group">
+            <label for="population">Tamaño de la población:</label>
+            <input type="number" id="population" value="10" min="2">
+        </div>
+
+        <div class="input-group">
+            <label for="generations">Número de generaciones:</label>
+            <input type="number" id="generations" value="20" min="1">
+        </div>
+
+        <div class="input-group">
+            <label for="range">Rango de valores (±):</label>
+            <input type="number" id="range" value="10" min="1">
+        </div>
+
         <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
         <div class="result-box" id="output"></div>
     </div>
 
     <script>
-        const populationSize = 10;
-        const generations = 20;
-
         function fitness(x) {
-            return -(x * x); // Queremos minimizar x^2, así que usamos valor negativo como aptitud
+            return -(x * x); // Aptitud negativa para minimizar x^2
         }
 
-        function createIndividual() {
-            return (Math.random() * 20 - 10).toFixed(4); // Valor entre -10 y 10
+        function createIndividual(range) {
+            return (Math.random() * (2 * range) - range).toFixed(4);
         }
 
-        function createPopulation() {
-            return Array.from({ length: populationSize }, createIndividual);
+        function createPopulation(size, range) {
+            return Array.from({ length: size }, () => createIndividual(range));
         }
 
         function selection(pop) {
-            return [...pop].sort((a, b) => fitness(parseFloat(b)) - fitness(parseFloat(a))).slice(0, populationSize / 2);
+            return [...pop].sort((a, b) => fitness(parseFloat(b)) - fitness(parseFloat(a))).slice(0, Math.floor(pop.length / 2));
         }
 
         function crossover(p1, p2) {
             const alpha = Math.random();
-            const child = (alpha * parseFloat(p1) + (1 - alpha) * parseFloat(p2)).toFixed(4);
-            return child;
+            return (alpha * parseFloat(p1) + (1 - alpha) * parseFloat(p2)).toFixed(4);
         }
 
-        function mutate(x) {
-            const mutation = (Math.random() * 2 - 1).toFixed(4); // Valor entre -1 y 1
-            return (parseFloat(x) + parseFloat(mutation)).toFixed(4);
+        function mutate(x, range) {
+            const mutation = (Math.random() * 2 - 1).toFixed(4); // Entre -1 y 1
+            let result = parseFloat(x) + parseFloat(mutation);
+            return Math.max(-range, Math.min(range, result)).toFixed(4);
         }
 
         function runGA() {
-            let population = createPopulation();
+            const populationSize = parseInt(document.getElementById("population").value);
+            const generations = parseInt(document.getElementById("generations").value);
+            const range = parseFloat(document.getElementById("range").value);
+
+            let population = createPopulation(populationSize, range);
             const output = document.getElementById("output");
             output.innerHTML = "";
 
@@ -78,9 +107,8 @@
                 for (let i = 0; i < selected.length; i += 2) {
                     const p1 = selected[i];
                     const p2 = selected[i + 1] || selected[0];
-                    const child1 = mutate(crossover(p1, p2));
-                    const child2 = mutate(crossover(p2, p1));
-                    nextGen.push(child1, child2);
+                    nextGen.push(mutate(crossover(p1, p2), range));
+                    nextGen.push(mutate(crossover(p2, p1), range));
                 }
 
                 population = nextGen;
