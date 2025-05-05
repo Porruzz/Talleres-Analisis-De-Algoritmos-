@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 8 - Asignación de Recursos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            color: white;
+        }
+        input[type="number"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            width: 100px;
+        }
+        .btn-run {
+            background-color: #17a2b8;
+            margin-top: 10px;
+        }
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+            color: white;
+        }
+        th, td {
+            border: 1px solid white;
+            padding: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 Ejercicio 8: Asignación de Recursos en una Empresa</h1>
+        <p>Usa un algoritmo genético para asignar empleados a tareas minimizando el tiempo total de ejecución.</p>
+
+        <div class="input-group">
+            <label for="generaciones">Número de generaciones:</label>
+            <input type="number" id="generaciones" value="20" min="1">
+        </div>
+
+        <div class="input-group">
+            <label for="poblacion">Tamaño de población:</label>
+            <input type="number" id="poblacion" value="10" min="2">
+        </div>
+
+        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+        <div class="result-box" id="output"></div>
+    </div>
+
+    <script>
+        const empleados = ["Ana", "Luis", "Carlos", "Marta"];
+        const tareas = ["Tarea A", "Tarea B", "Tarea C", "Tarea D"];
+
+        const tiempos = [
+            [4, 2, 5, 7],  // Ana
+            [6, 4, 3, 8],  // Luis
+            [5, 3, 2, 6],  // Carlos
+            [7, 6, 4, 5]   // Marta
+        ];
+
+        function fitness(asignacion) {
+            let total = 0;
+            for (let i = 0; i < tareas.length; i++) {
+                total += tiempos[asignacion[i]][i];
+            }
+            return total;
+        }
+
+        function crearIndividuo() {
+            const asignacion = [0, 1, 2, 3];
+            for (let i = asignacion.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [asignacion[i], asignacion[j]] = [asignacion[j], asignacion[i]];
+            }
+            return asignacion;
+        }
+
+        function crearPoblacion(tam) {
+            return Array.from({ length: tam }, crearIndividuo);
+        }
+
+        function seleccionar(poblacion) {
+            return [...poblacion].sort((a, b) => fitness(a) - fitness(b)).slice(0, poblacion.length / 2);
+        }
+
+        function crossover(p1, p2) {
+            const point = Math.floor(Math.random() * p1.length);
+            const child = [...p1.slice(0, point), ...p2.filter(e => !p1.slice(0, point).includes(e))];
+            return child;
+        }
+
+        function mutar(asignacion) {
+            const [i, j] = [Math.floor(Math.random() * asignacion.length), Math.floor(Math.random() * asignacion.length)];
+            [asignacion[i], asignacion[j]] = [asignacion[j], asignacion[i]];
+            return asignacion;
+        }
+
+        function mostrarAsignacion(asignacion, output, gen) {
+            let html = `<strong>Generación ${gen}:</strong><br>`;
+            html += `<table><tr><th>Tarea</th><th>Empleado</th><th>Tiempo (min)</th></tr>`;
+            let total = 0;
+            for (let i = 0; i < tareas.length; i++) {
+                const tiempo = tiempos[asignacion[i]][i];
+                total += tiempo;
+                html += `<tr><td>${tareas[i]}</td><td>${empleados[asignacion[i]]}</td><td>${tiempo}</td></tr>`;
+            }
+            html += `</table><p><strong>Tiempo total: ${total} minutos</strong></p><br>`;
+            output.innerHTML += html;
+        }
+
+        function runGA() {
+            const generaciones = parseInt(document.getElementById("generaciones").value);
+            const poblacionTam = parseInt(document.getElementById("poblacion").value);
+            let poblacion = crearPoblacion(poblacionTam);
+            const output = document.getElementById("output");
+            output.innerHTML = "";
+
+            for (let gen = 1; gen <= generaciones; gen++) {
+                const seleccionados = seleccionar(poblacion);
+                const siguienteGen = [];
+
+                for (let i = 0; i < seleccionados.length; i += 2) {
+                    const p1 = seleccionados[i];
+                    const p2 = seleccionados[i + 1] || seleccionados[0];
+                    siguienteGen.push(mutar(crossover(p1, p2)));
+                    siguienteGen.push(mutar(crossover(p2, p1)));
+                }
+
+                poblacion = siguienteGen;
+                const mejor = seleccionar(poblacion)[0];
+                mostrarAsignacion(mejor, output, gen);
+            }
+        }
+    </script>
+</body>
+</html>
