@@ -1,131 +1,163 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ejercicio 6 - Cambio de Monedas (COP)</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .input-group {
-            margin: 10px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            color: white;
-        }
-        input[type="number"] {
-            padding: 5px;
-            border-radius: 5px;
-            border: none;
-            width: 150px;
-        }
-        .btn-run {
-            background-color: #ffc107;
-            color: black;
-            margin-top: 10px;
-        }
-        .result-box {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 10px;
-            font-family: monospace;
-        }
-        ul {
-            padding-left: 20px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 6 - Cambio de Monedas (COP)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #3d0c02, #8b0000);
+      color: white;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 150px;
+    }
+
+    .btn-run {
+      background-color: #ffc107;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .btn-run:hover {
+      background-color: #e0a800;
+    }
+
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>💰 Ejercicio 6: Problema del Cambio (Pesos Colombianos)</h1>
-        <p>Este ejercicio utiliza un algoritmo genético para encontrar la combinación de monedas que da el cambio exacto con la menor cantidad de monedas posibles.</p>
+  <div class="container">
+    <h1>💰 Ejercicio 6: Problema del Cambio (Pesos Colombianos)</h1>
+    <p>Este algoritmo genético busca dar el cambio exacto usando la menor cantidad de monedas posibles.</p>
 
-        <div class="input-group">
-            <label for="cantidad">Cantidad a cambiar (COP):</label>
-            <input type="number" id="cantidad" value="1800" min="50" step="50">
-        </div>
-
-        <div class="input-group">
-            <label for="generaciones">Número de generaciones:</label>
-            <input type="number" id="generaciones" value="20" min="1">
-        </div>
-
-        <div class="input-group">
-            <label for="poblacion">Tamaño de población:</label>
-            <input type="number" id="poblacion" value="10" min="2">
-        </div>
-
-        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
-
-        <div class="result-box" id="output"></div>
+    <div class="input-group">
+      <label for="cantidad">Cantidad a cambiar (COP):</label>
+      <input type="number" id="cantidad" value="1800" min="50" step="50" />
     </div>
 
-    <script>
-        const monedas = [1000, 500, 200, 100, 50];
+    <div class="input-group">
+      <label for="generaciones">Número de generaciones:</label>
+      <input type="number" id="generaciones" value="20" min="1" />
+    </div>
 
-        function fitness(individuo, objetivo) {
-            const total = individuo.reduce((acc, cant, idx) => acc + cant * monedas[idx], 0);
-            const cantidadMonedas = individuo.reduce((a, b) => a + b, 0);
-            return total === objetivo ? cantidadMonedas : Infinity;
+    <div class="input-group">
+      <label for="poblacion">Tamaño de población:</label>
+      <input type="number" id="poblacion" value="10" min="2" />
+    </div>
+
+    <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    const monedas = [1000, 500, 200, 100, 50];
+
+    function fitness(individuo, objetivo) {
+      const total = individuo.reduce((acc, cant, idx) => acc + cant * monedas[idx], 0);
+      const cantidadMonedas = individuo.reduce((a, b) => a + b, 0);
+      return total === objetivo ? cantidadMonedas : Infinity;
+    }
+
+    function crearIndividuo(objetivo) {
+      const maxMonedas = monedas.map(m => Math.floor(objetivo / m));
+      return monedas.map((_, i) => Math.floor(Math.random() * (maxMonedas[i] + 1)));
+    }
+
+    function crearPoblacion(tam, objetivo) {
+      return Array.from({ length: tam }, () => crearIndividuo(objetivo));
+    }
+
+    function seleccionar(poblacion, objetivo) {
+      return [...poblacion].sort((a, b) => fitness(a, objetivo) - fitness(b, objetivo)).slice(0, poblacion.length / 2);
+    }
+
+    function crossover(p1, p2) {
+      const punto = Math.floor(Math.random() * monedas.length);
+      const hijo = [...p1.slice(0, punto), ...p2.slice(punto)];
+      return hijo;
+    }
+
+    function mutar(individuo, objetivo) {
+      const i = Math.floor(Math.random() * monedas.length);
+      const cambio = Math.floor(Math.random() * 3) - 1;
+      individuo[i] = Math.max(0, individuo[i] + cambio);
+      return individuo;
+    }
+
+    function runGA() {
+      const cantidad = parseInt(document.getElementById("cantidad").value);
+      const generaciones = parseInt(document.getElementById("generaciones").value);
+      const poblacionTam = parseInt(document.getElementById("poblacion").value);
+      const output = document.getElementById("output");
+      let poblacion = crearPoblacion(poblacionTam, cantidad);
+
+      output.innerHTML = "";
+      for (let gen = 1; gen <= generaciones; gen++) {
+        const seleccionados = seleccionar(poblacion, cantidad);
+        const siguienteGen = [];
+
+        for (let i = 0; i < seleccionados.length; i += 2) {
+          const p1 = seleccionados[i];
+          const p2 = seleccionados[i + 1] || seleccionados[0];
+          siguienteGen.push(mutar(crossover(p1, p2), cantidad));
+          siguienteGen.push(mutar(crossover(p2, p1), cantidad));
         }
 
-        function crearIndividuo(objetivo) {
-            const maxMonedas = monedas.map(m => Math.floor(objetivo / m));
-            return monedas.map((_, i) => Math.floor(Math.random() * (maxMonedas[i] + 1)));
-        }
+        poblacion = siguienteGen;
+        const mejor = seleccionar(poblacion, cantidad)[0];
+        const total = mejor.reduce((acc, cant, idx) => acc + cant * monedas[idx], 0);
 
-        function crearPoblacion(tam, objetivo) {
-            return Array.from({ length: tam }, () => crearIndividuo(objetivo));
-        }
+        output.innerHTML += `Generación ${gen}:\nCambio total: ${total} COP\nCombinación:\n` +
+          `${mejor.map((c, i) => ` - ${monedas[i]} COP × ${c}`).join("\n")}\n` +
+          `Total de monedas: ${mejor.reduce((a, b) => a + b, 0)}\n\n`;
+      }
 
-        function seleccionar(poblacion, objetivo) {
-            return [...poblacion].sort((a, b) => fitness(a, objetivo) - fitness(b, objetivo)).slice(0, poblacion.length / 2);
-        }
-
-        function crossover(p1, p2) {
-            const punto = Math.floor(Math.random() * monedas.length);
-            const hijo = [...p1.slice(0, punto), ...p2.slice(punto)];
-            return hijo;
-        }
-
-        function mutar(individuo, objetivo) {
-            const i = Math.floor(Math.random() * monedas.length);
-            const cambio = Math.floor(Math.random() * 3) - 1;
-            individuo[i] = Math.max(0, individuo[i] + cambio);
-            return individuo;
-        }
-
-        function runGA() {
-            const cantidad = parseInt(document.getElementById("cantidad").value);
-            const generaciones = parseInt(document.getElementById("generaciones").value);
-            const poblacionTam = parseInt(document.getElementById("poblacion").value);
-            const output = document.getElementById("output");
-            let poblacion = crearPoblacion(poblacionTam, cantidad);
-
-            output.innerHTML = "";
-            for (let gen = 1; gen <= generaciones; gen++) {
-                const seleccionados = seleccionar(poblacion, cantidad);
-                const siguienteGen = [];
-
-                for (let i = 0; i < seleccionados.length; i += 2) {
-                    const p1 = seleccionados[i];
-                    const p2 = seleccionados[i + 1] || seleccionados[0];
-                    siguienteGen.push(mutar(crossover(p1, p2), cantidad));
-                    siguienteGen.push(mutar(crossover(p2, p1), cantidad));
-                }
-
-                poblacion = siguienteGen;
-                const mejor = seleccionar(poblacion, cantidad)[0];
-                const total = mejor.reduce((acc, cant, idx) => acc + cant * monedas[idx], 0);
-
-                output.innerHTML += `<strong>Generación ${gen}:</strong><br>
-                    Cambio total: ${total} COP<br>
-                    Combinación: <ul>${mejor.map((c, i) => `<li>${monedas[i]} COP × ${c}</li>`).join('')}</ul>
-                    Total de monedas: ${mejor.reduce((a, b) => a + b, 0)}<br><br>`;
-            }
-        }
-    </script>
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  </script>
 </body>
 </html>
