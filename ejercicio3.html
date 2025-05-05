@@ -1,34 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ejercicio 3 - Problema del Viajante</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #3d0c02, #8b0000);
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
         canvas {
             background-color: #fff;
             border: 2px solid #444;
             border-radius: 10px;
             margin-top: 20px;
+            display: block;
         }
+
         .input-group {
             margin: 10px 0;
             display: flex;
             flex-direction: column;
             gap: 5px;
-            color: white;
         }
+
         input[type="number"] {
             padding: 5px;
             border-radius: 5px;
             border: none;
             width: 100px;
         }
+
         .btn-run {
             background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
             margin-top: 10px;
         }
+
+        .btn-run:hover {
+            background-color: #0056b3;
+        }
+
         .result-box {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -36,6 +66,7 @@
             margin-top: 20px;
             border-radius: 10px;
             font-family: monospace;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -54,7 +85,7 @@
             <input type="number" id="population" value="10" min="2">
         </div>
 
-        <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+        <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
 
         <canvas id="canvas" width="400" height="400"></canvas>
         <div class="result-box" id="output"></div>
@@ -63,6 +94,7 @@
     <script>
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
+
         const cities = [
             { x: 50, y: 350 },
             { x: 100, y: 100 },
@@ -156,7 +188,7 @@
                 population = nextGen;
                 const best = selection(population)[0];
                 drawRoute(best);
-                output.innerHTML += `<strong>Generación ${gen}:</strong><br>Ruta: [${best.join(" → ")}]<br>Distancia total: ${fitness(best).toFixed(2)}<br><br>`;
+                output.innerHTML += `Generación ${gen}:\nRuta: [${best.join(" → ")}]\nDistancia total: ${fitness(best).toFixed(2)}\n\n`;
             }
         }
     </script>
