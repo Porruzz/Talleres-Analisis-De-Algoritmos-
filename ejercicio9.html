@@ -6,23 +6,50 @@
   <title>Ejercicio 9 - Selección de Características</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #3d0c02, #8b0000);
+      color: white;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
     .input-group {
       margin: 10px 0;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      color: white;
     }
+
     input[type="number"] {
       padding: 5px;
       border-radius: 5px;
       border: none;
       width: 150px;
     }
+
     .btn-run {
       background-color: #00c851;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
+
+    .btn-run:hover {
+      background-color: #007e3a;
+    }
+
     .result-box {
       background: rgba(255, 255, 255, 0.1);
       color: white;
@@ -30,7 +57,11 @@
       margin-top: 20px;
       border-radius: 10px;
       font-family: monospace;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: normal;
     }
+
     ul.features {
       padding: 0;
       list-style: none;
@@ -39,6 +70,7 @@
       gap: 8px;
       margin-top: 10px;
     }
+
     ul.features li {
       width: 30px;
       height: 30px;
@@ -47,6 +79,7 @@
       line-height: 30px;
       background-color: #555;
     }
+
     ul.features li.active {
       background-color: #00c851;
       color: white;
@@ -73,7 +106,7 @@
       <input type="number" id="poblacion" value="10" min="2" />
     </div>
 
-    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+    <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
 
     <div class="result-box" id="output"></div>
   </div>
@@ -81,7 +114,7 @@
   <script>
     function fitness(ind, max) {
       const act = ind.reduce((a, b) => a + b, 0);
-      const useful = ind.filter((v, i) => v === 1 && i % 2 === 0).length; // características "útiles"
+      const useful = ind.filter((v, i) => v === 1 && i % 2 === 0).length;
       return act <= max ? useful : useful - (act - max);
     }
 
@@ -116,7 +149,7 @@
       const n = parseInt(document.getElementById("features").value);
       const generaciones = parseInt(document.getElementById("generaciones").value);
       const poblacionTam = parseInt(document.getElementById("poblacion").value);
-      const max = Math.floor(n / 2) + 1; // límite razonable de features
+      const max = Math.floor(n / 2) + 1;
 
       let pop = createPopulation(poblacionTam, n);
       const output = document.getElementById("output");
@@ -135,6 +168,8 @@
         const best = selection(pop, max)[0];
         output.innerHTML += `<strong>Generación ${gen}:</strong><br>${render(best)}<br>Aptitud: ${fitness(best, max)}<br><br>`;
       }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
   </script>
 </body>
