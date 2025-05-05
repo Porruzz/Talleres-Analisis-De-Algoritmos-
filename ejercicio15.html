@@ -4,33 +4,89 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ejercicio 15 - Optimización PID con AG</title>
-  <link rel="stylesheet" href="styles.css">
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
+      background-attachment: fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px black;
+    }
+
+    p {
+      margin-bottom: 25px;
+    }
+
+    .form-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
     .input-group {
-      margin: 10px 0;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      color: white;
+      text-align: left;
+      width: 200px;
     }
+
     input[type="number"] {
       padding: 5px;
       border-radius: 5px;
       border: none;
-      width: 150px;
+      width: 100%;
     }
+
     .btn-run {
       background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
+
+    .btn-run:hover {
+      background-color: #c0392b;
+    }
+
     .result-box {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
       color: white;
       padding: 15px;
       margin-top: 20px;
       border-radius: 10px;
       font-family: monospace;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      width: 100%;
+      box-sizing: border-box;
     }
+
     .bar {
       height: 10px;
       background: #e74c3c;
@@ -44,15 +100,18 @@
     <h1>🎯 Ejercicio 15: Optimización de Parámetros PID</h1>
     <p>Usa un algoritmo genético para encontrar los mejores parámetros <strong>PID (Kp, Ki, Kd)</strong> que minimicen el error cuadrático acumulado en un sistema simulado.</p>
 
-    <div class="input-group">
-      <label for="generaciones">Número de generaciones:</label>
-      <input type="number" id="generaciones" value="20" min="1" />
+    <div class="form-wrapper">
+      <div class="input-group">
+        <label for="generaciones">Número de generaciones:</label>
+        <input type="number" id="generaciones" value="20" min="1" />
+      </div>
+      <div class="input-group">
+        <label for="poblacion">Tamaño de población:</label>
+        <input type="number" id="poblacion" value="10" min="2" />
+      </div>
     </div>
-    <div class="input-group">
-      <label for="poblacion">Tamaño de población:</label>
-      <input type="number" id="poblacion" value="10" min="2" />
-    </div>
-    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+    <button class="btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
 
     <div class="result-box" id="output"></div>
   </div>
@@ -61,7 +120,7 @@
     function simulatePID([kp, ki, kd]) {
       let error = 0, integral = 0, derivative = 0, lastError = 0, output = 0;
       let totalError = 0;
-      const setpoint = 1; // valor deseado
+      const setpoint = 1;
       let actual = 0;
 
       for (let t = 0; t < 100; t++) {
@@ -69,7 +128,7 @@
         integral += error;
         derivative = error - lastError;
         output = kp * error + ki * integral + kd * derivative;
-        actual += output * 0.01; // simulamos respuesta del sistema
+        actual += output * 0.01;
         totalError += error ** 2;
         lastError = error;
       }
@@ -117,17 +176,21 @@
       for (let gen = 1; gen <= generaciones; gen++) {
         const seleccionados = selection(pop);
         const nextGen = [];
+
         for (let i = 0; i < seleccionados.length; i += 2) {
           const p1 = seleccionados[i];
           const p2 = seleccionados[i + 1] || seleccionados[0];
           nextGen.push(mutate(crossover(p1, p2)));
           nextGen.push(mutate(crossover(p2, p1)));
         }
+
         pop = nextGen;
-        const best = selection(pop)[0];
+        const best = selection(poblacion)[0];
         const error = -fitness(best).toFixed(3);
-        output.innerHTML += `<strong>Generación ${gen}:</strong><br>PID = Kp: ${best[0]}, Ki: ${best[1]}, Kd: ${best[2]}<br>Error cuadrático: <span style='color: #00ff88'>${error}</span><div class='bar' style='width:${Math.min(error * 10, 100)}%'></div><br>`;
+        output.innerHTML += `Generación ${gen}:\nPID = Kp: ${best[0]}, Ki: ${best[1]}, Kd: ${best[2]}\nError cuadrático: ${error}\n<div class="bar" style="width:${Math.min(error * 10, 100)}%"></div>\n\n`;
       }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
   </script>
 </body>
