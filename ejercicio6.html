@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 6 - Cambio de Monedas</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .input-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: white;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 100px;
+    }
+    .btn-run {
+      background-color: #ffc107;
+      margin-top: 10px;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+    }
+    ul.moneda-lista {
+      margin: 0;
+      padding-left: 20px;
+      color: #00ff88;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Ejercicio 6: Problema del Cambio de Monedas</h1>
+    <p>Este algoritmo genético encuentra la combinación de monedas que da un cambio exacto con la menor cantidad de monedas.</p>
+
+    <div class="input-group">
+      <label for="amount">Monto a cambiar:</label>
+      <input type="number" id="amount" value="37" min="1" />
+    </div>
+
+    <div class="input-group">
+      <label for="generations">Número de generaciones:</label>
+      <input type="number" id="generations" value="30" min="1" />
+    </div>
+
+    <div class="input-group">
+      <label for="population">Tamaño de población:</label>
+      <input type="number" id="population" value="10" min="2" />
+    </div>
+
+    <button class="btn btn-run" onclick="runGA()">▶ Ejecutar Algoritmo</button>
+
+    <div class="result-box" id="output"></div>
+  </div>
+
+  <script>
+    const denominations = [1, 2, 5, 10, 20, 50, 100];
+
+    function generateIndividual(target) {
+      return denominations.map(() => Math.floor(Math.random() * (target / 2)));
+    }
+
+    function fitness(individual, target) {
+      const sum = individual.reduce((acc, val, i) => acc + val * denominations[i], 0);
+      const totalCoins = individual.reduce((a, b) => a + b, 0);
+      return sum > target ? 9999 : (target - sum) + totalCoins;
+    }
+
+    function createPopulation(size, target) {
+      return Array.from({ length: size }, () => generateIndividual(target));
+    }
+
+    function selection(pop, target) {
+      return [...pop].sort((a, b) => fitness(a, target) - fitness(b, target)).slice(0, Math.floor(pop.length / 2));
+    }
+
+    function crossover(p1, p2) {
+      const point = Math.floor(Math.random() * p1.length);
+      const child = [...p1.slice(0, point), ...p2.slice(point)];
+      return child;
+    }
+
+    function mutate(ind) {
+      const idx = Math.floor(Math.random() * ind.length);
+      ind[idx] = Math.max(0, ind[idx] + (Math.random() > 0.5 ? 1 : -1));
+      return ind;
+    }
+
+    function runGA() {
+      const amount = parseInt(document.getElementById("amount").value);
+      const generations = parseInt(document.getElementById("generations").value);
+      const populationSize = parseInt(document.getElementById("population").value);
+      const output = document.getElementById("output");
+
+      let population = createPopulation(populationSize, amount);
+      output.innerHTML = "";
+
+      for (let gen = 1; gen <= generations; gen++) {
+        const selected = selection(population, amount);
+        const nextGen = [];
+
+        for (let i = 0; i < selected.length; i += 2) {
+          const p1 = selected[i];
+          const p2 = selected[i + 1] || selected[0];
+          nextGen.push(mutate(crossover(p1, p2)));
+          nextGen.push(mutate(crossover(p2, p1)));
+        }
+
+        population = nextGen;
+        const best = selection(population, amount)[0];
+        const total = best.reduce((acc, val, i) => acc + val * denominations[i], 0);
+        const coins = best.reduce((a, b) => a + b, 0);
+
+        output.innerHTML += `<strong>Generación ${gen}:</strong><br>` +
+          `Cambio total: ${total} | Monedas usadas: ${coins}<br>` +
+          `Combinación:<ul class='moneda-lista'>${best.map((count, i) => `<li>${count} x $${denominations[i]}</li>`).join('')}</ul>`;
+
+        if (total === amount) break;
+      }
+    }
+  </script>
+</body>
+</html>
